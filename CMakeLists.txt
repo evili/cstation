@@ -4,5 +4,4 @@ project(cstation)
 
 # Expose project include/ to the compiler so <openlcb.h> is resolvable
 target_include_directories(app PRIVATE ${CMAKE_SOURCE_DIR}/include)
-
-target_sources(app PRIVATE src/main.c src/openlcb_core.c src/openlcb_can.c)
+target_include_directories(app PRIVATE ${CMAKE_SOURCE_DIR}/src)

@@ -197,7 +197,6 @@ ZTEST(openlcb_can_tests, test_reassembly_overflow)
 ZTEST(openlcb_can_tests, test_concurrent_reassembly_exhaustion)
 {
     recv_len = 0;
-    int delivered = 0;
     openlcb_core_register_message_handler(test_recv_cb, NULL);
     openlcb_can_test_init();
 
@@ -410,5 +409,5 @@ ZTEST_SUITE(openlcb_can_tests, NULL, NULL, NULL, NULL, NULL);
 
 void test_main(void)
 {
-    ztest_run_test_suite(openlcb_can_tests, false, NULL, NULL, NULL);
+    ztest_run_test_suite(openlcb_can_tests, false, 0, 0, NULL);
 }

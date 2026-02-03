@@ -26,14 +26,6 @@ static int last_tx_ms = 0;
 /* CAN filter id */
 static int rx_filter_id = -1;
 
-/* LED indicator for CAN bus error states */
-#if DT_NODE_HAS_STATUS(DT_ALIAS(led2), okay)
-static const struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
-#define HAVE_LED2 1
-#else
-#define HAVE_LED2 0
-#endif
-
 /* Green LED for CAN TX success (short flash) */
 #if DT_NODE_HAS_STATUS(DT_ALIAS(led0), okay)
 static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
@@ -50,6 +42,15 @@ static const struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios);
 #define HAVE_LED1 0
 #endif
 
+/* LED indicator for CAN bus error states */
+#if DT_NODE_HAS_STATUS(DT_ALIAS(led2), okay)
+static const struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
+#define HAVE_LED2 1
+#else
+#define HAVE_LED2 0
+#endif
+
+
 /* LED modes (mapped to tests via openlcb_can_get_led_mode()) */
 enum olcan_led_mode {
     OLCAN_LED_NORMAL = 0,
@@ -62,7 +63,6 @@ static atomic_t led_mode = ATOMIC_INIT(OLCAN_LED_NORMAL);
 static struct k_work led_state_work;
 static struct k_work_delayable led_blink_work;
 static uint32_t led_blink_ms = 0;
-static bool led_inverted = false; /* if board drives LED active low */
 
 /* LED0 (green) short-flash state */
 static atomic_t led0_flashing = ATOMIC_INIT(0);
