@@ -7,12 +7,6 @@
 
 LOG_MODULE_REGISTER(cstation, LOG_LEVEL_INF);
 
-static void openlcb_app_rx_handler(const uint8_t *data, size_t len, void *ud)
-{
-    ARG_UNUSED(ud);
-    LOG_INF("OpenLCB core message RX len=%zu", len);
-}
-
 int main(void)
 {
     const struct device *can_dev = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(can1));

@@ -950,4 +950,8 @@ int openlcb_can_get_led1_flash_ms(void)
 #endif
 }
 
- 
+static void openlcb_app_rx_handler(const uint8_t *data, size_t len, void *ud)
+{
+    ARG_UNUSED(ud);
+    LOG_INF("OpenLCB core message RX len=%zu", len);
+}
