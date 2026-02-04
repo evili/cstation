@@ -8,8 +8,7 @@
 
 LOG_MODULE_REGISTER(cstation, LOG_LEVEL_INF);
 
-#define CONFIG_LCC_NODE_ID (0x050101011A01uLL)
-
+const lcc_node_id_t CONFIG_LCC_NODE_ID = {0x05, 0x01, 0x01, 0x01, 0x1A, 0x01};
 const struct device *can_dev = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(can1));
 
 int main(void) {
@@ -25,7 +24,7 @@ int main(void) {
     } else {
         LOG_INF("CAN1 device ready");
     }
-    
+
     /* Define LCC node */
     lcc_node_t node = {.id = CONFIG_LCC_NODE_ID, .state = LCC_STATE_UNINITIALIZED, .device = NULL};
 
@@ -40,14 +39,14 @@ int main(void) {
         .receive = lcc_can_receive_message
     };
 
-    int ret = lcc_init(&node, (const uint8_t *)&CONFIG_LCC_NODE_ID);
+    ret = lcc_init(&node, (const uint8_t *)&CONFIG_LCC_NODE_ID);
     if (ret != 0) {
         LOG_ERR("Failed to initialize LCC node");
         return -EIO;
     }
 
     while(1) {
-        ret = lcc_send_message(&node, LCC_MESSAGE_VERIFY_NODE_GLOBAL);
+        ret = lcc_send_message(&node, &LCC_MESSAGE_VERIFY_NODE_GLOBAL);
         if (ret != 0) {
             LOG_ERR("Failed to send LCC message");
         }

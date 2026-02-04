@@ -6,6 +6,7 @@ project(cstation)
 set(SOURCES
   src/main.c
   src/lcc.c
+  src/lcc_can.c
 )
       
 # Expose project include/ to the compiler

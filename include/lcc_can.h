@@ -4,7 +4,10 @@
 #include <zephyr/drivers/can.h>
 #include "lcc.h"
 
-#define LCC_CHECK_ID_WAIT 200 // milliseconds
+#define LCC_CAN_CHECK_ID_WAIT 200 // milliseconds
+
+#define LCC_CAN_BIT_RATE 125000 // 125 kbps
+
 
 typedef enum {
     LCC_CAN_STATE_INHIBITED = 0,
@@ -24,9 +27,9 @@ typedef stuct {
 } lcc_can_dev_t;
 
 
-int lcc_can_attach(const lcc_node_t *node, const struct device *can_dev);
-int lcc_can_send_message(const lcc_node_t *node, const lcc_message_t *message);
-int lcc_can_receive_message(lcc_node_t *node, lcc_message_t *message);
+int lcc_can_attach(void *can_device, const lcc_node_t *node);
+int lcc_can_send_message(void *can_device, const lcc_message_t *message);
+int lcc_can_receive_message(void *can_device, lcc_message_t *message);
 
 #endif // LCC_CAN_H
 
