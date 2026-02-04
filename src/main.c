@@ -3,13 +3,17 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/can.h>
 #include <zephyr/logging/log.h>
-#include <openlcb.h>
+#include <lcc.h>
+#include <lcc_can.h>
 
 LOG_MODULE_REGISTER(cstation, LOG_LEVEL_INF);
 
-int main(void)
-{
-    const struct device *can_dev = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(can1));
+#define CONFIG_LCC_NODE_ID (0x050101011A01uLL)
+
+const struct device *can_dev = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(can1));
+
+int main(void) {
+    int ret;
 
     if (!can_dev) {
         LOG_ERR("CAN1 device node not found");
@@ -21,27 +25,33 @@ int main(void)
     } else {
         LOG_INF("CAN1 device ready");
     }
+    
+    /* Define LCC node */
+    lcc_node_t node = {.id = CONFIG_LCC_NODE_ID, .state = LCC_STATE_UNINITIALIZED, .device = NULL};
 
-    /* Initialize OpenLCB helper and register a simple RX handler */
-    if (openlcb_init(can_dev) == 0) {
-        /* set the Node ID (already defaulted, but explicit) */
-        const uint8_t my_node_id[6] = { 0x05, 0x01, 0x01, 0x01, 0x1A, 0x01 };
-        openlcb_set_node_id(my_node_id);
+    /* Define LCC_CAN */
+    lcc_can_dev_t lcc_can_dev = {.can_dev = can_dev, .state = LCC_CAN_STATE_INHIBITED, .lcc_node = &node};
 
-        openlcb_register_rx_handler(openlcb_app_rx_handler, NULL);
-        LOG_INF("OpenLCB helper initialized - starting alias negotiation");
+    /* Define LCC Device */
+    lcc_device_t lcc_can_device = {
+        .device_obj = &lcc_can_dev,
+        .attach = lcc_can_attach,
+        .send = lcc_can_send_message,
+        .receive = lcc_can_receive_message
+    };
 
-        /* start deterministic alias negotiation */
-        if (openlcb_can_start_alias_negotiation() != 0) {
-            LOG_WRN("Failed to start alias negotiation");
-        }
-    } else {
-        LOG_WRN("OpenLCB helper failed to initialize");
+    int ret = lcc_init(&node, (const uint8_t *)&CONFIG_LCC_NODE_ID);
+    if (ret != 0) {
+        LOG_ERR("Failed to initialize LCC node");
+        return -EIO;
     }
 
-    while (1) {
-        LOG_INF("Heartbeat - CAN1 %s alias=0x%03x state=%d", device_is_ready(can_dev) ? "ready" : "not ready", openlcb_can_get_alias(), openlcb_can_get_state());
-        k_sleep(K_SECONDS(5));
+    while(1) {
+        ret = lcc_send_message(&node, LCC_MESSAGE_VERIFY_NODE_GLOBAL);
+        if (ret != 0) {
+            LOG_ERR("Failed to send LCC message");
+        }
+        k_sleep(K_MSEC(1000));
     }
 
     return 0;
