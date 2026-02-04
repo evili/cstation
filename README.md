@@ -1,6 +1,8 @@
 # cstation
 
-Minimal Zephyr application that enables `can1` on `nucleo_f767zi` and verifies the device is ready.
+Minimal Zephyr application that implements partially LCC protocol.
+
+##WARNING##: It is incomplete, non compliant, and non usable. Just an excercise.
 
 ## Build
 
@@ -16,12 +18,3 @@ Minimal Zephyr application that enables `can1` on `nucleo_f767zi` and verifies t
 ## Notes
 
 - Ensure an external CAN transceiver is present and wired to the Nucleo CAN pins before connecting to the LCC/OpenLCB network.
-
-- Implemented a minimal OpenLCB helper that: enforces 29-bit
-  (extended) CAN frames only, registers an ISR RX handler, and
-  provides APIs to set and send the Node ID. The default Node ID is
-  **05:01:01:01:1A:01** (developer reserved range). See
-  `include/openlcb.h` and `src/openlcb.c` for details. Note: payload
-  format and extended CAN ID used in `openlcb_send_node_id()` are
-  placeholders — update to the exact S-9.7.2.1 mapping if you need
-  strict interoperability.
