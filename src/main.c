@@ -26,20 +26,15 @@ int main(void) {
     }
 
     /* Define LCC node */
-    lcc_node_t node = {.id = CONFIG_LCC_NODE_ID, .state = LCC_STATE_UNINITIALIZED, .device = NULL};
+    lcc_node_t node;
 
-    /* Define LCC_CAN */
-    lcc_can_dev_t lcc_can_dev = {.can_dev = can_dev, .state = LCC_CAN_STATE_INHIBITED, .lcc_node = &node};
-
-    /* Define LCC Device */
-    lcc_device_t lcc_can_device = {
-        .device_obj = &lcc_can_dev,
-        .attach = lcc_can_attach,
-        .send = lcc_can_send_message,
-        .receive = lcc_can_receive_message
-    };
-
-    ret = lcc_init(&node, (const uint8_t *)&CONFIG_LCC_NODE_ID);
+    ret = lcc_init(&node,
+        CONFIG_LCC_NODE_ID,
+        (void *) can_dev,
+        lcc_can_attach,
+        lcc_can_send_message,
+        lcc_can_receive_message
+    );
     if (ret != 0) {
         LOG_ERR("Failed to initialize LCC node");
         return -EIO;
