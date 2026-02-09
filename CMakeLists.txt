@@ -4,11 +4,16 @@ project(cstation)
 
 
 set(SOURCES
-  src/main.c
-  src/lcc.c
-  src/lcc_can.c
+  src/main.cpp
+  src/lcc.cpp
+  src/lcc_can.cpp
 )
-      
+
+set(HEADERS
+	include/lcc.hxx
+	include/lcc_can.hxx
+)
+
 # Expose project include/ to the compiler
 target_include_directories(app PRIVATE include)
 target_sources(app PRIVATE ${SOURCES} ${HEADERS})

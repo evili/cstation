@@ -4,13 +4,21 @@
 #include <zephyr/drivers/can.h>
 #include "lcc.hxx"
 
-#define LCC_CAN_CHECK_ID_WAIT 200 // milliseconds
+// Timing Constants (in milliseconds)
+#define LCC_CAN_CHECK_ID_WAIT 200
+// CAN Bit Rate
+#define LCC_CAN_BIT_RATE 125000
+// Filter Masks
+#define LCC_CAN_FILTER_CONTROL_FRAME_MASK 0x08000000
+#define LCC_CAN_FILTER_CONTENT_FIELD_MASK 0x07FFF000
+#define LCC_CAN_FILTER_SOURCE_ID_MASK     0x00000FFF
 
-#define LCC_CAN_BIT_RATE 125000 // 125 kbps
+#define LCC_CAN_CONTROL_FRAME 0x00000000
+#define LCC_CAN_LCC_FRAME     0x08000000
 
 
 typedef union {
-    can_frame_id_t can_frame;
+    can_frame frame;
     struct {
         uint32_t padding  :  3;
         uint32_t reserved  : 1;
@@ -20,25 +28,16 @@ typedef union {
         uint8_t  dlc;
         uint16_t timestamp;
         uint8_t  data[CAN_MAX_DLEN];
-    }
+    };
 } lcc_can_frame_t;
 
-
-// Filter Masks 
-LCC_CAN_FILTER_CONTROL_FRAME_MASK 0x08000000
-LCC_CAN_FILTER_CONTENT_FIELD_MASK 0x07FFF000
-LCC_CAN_FILTER_SOURCE_ID_MASK     0x00000FFF
-
-LCC_CAN_CONTROL_FRAME 0x00000000
-LCC_CAN_LCC_FRAME     0x08000000
-
-const can_filter_t LCC_CAN_CONTROL_FRAME_FILTER = {
+const can_filter LCC_CAN_CONTROL_FRAME_FILTER = {
     .id    = LCC_CAN_CONTROL_FRAME,
     .mask  = LCC_CAN_FILTER_CONTROL_FRAME_MASK,
     .flags = CAN_FILTER_IDE
 };
 
-const can_filter_t LCC_CAN_LCC_FRAME_FILTER = {
+const can_filter LCC_CAN_LCC_FRAME_FILTER = {
     .id    = LCC_CAN_LCC_FRAME,
     .mask  = LCC_CAN_FILTER_CONTROL_FRAME_MASK,
     .flags = CAN_FILTER_IDE
@@ -64,14 +63,15 @@ typedef union {
 } can_alias_id_t;
 
 
-class LCC_Can : LCC_Dev {
+class LCC_Can : public LCC_Device {
 public:
-  LCC_Can(device *);
+  LCC_Can(const device *);
   int attach(LCC_Node *);
   int send(lcc_message_t *);
   int recv(lcc_message_t *);
 private:
-  struct device *can_dev;
+  struct device const *can_dev;
+  LCC_Node *node;
   lcc_can_state_t state = LCC_CAN_STATE_INHIBITED;
   can_alias_id_t alias = {.pad = 0, .alias = 0};
   int lcc_enter_permitted_state();

@@ -1,14 +1,19 @@
-#include <lcc.hxx>
+#include <zephyr/logging/log.h>
 #include <errno.h>
 
-int LCC::Init(const uint8_t *node_id, LCC_Device *device) { 
+#include <lcc.hxx>
+
+
+LOG_MODULE_REGISTER(lcc, LOG_LEVEL_INF);
+
+int LCC_Node::Init(lcc_node_id_t *node_id, LCC_Device *device) {
 	if (!node_id || !device) {
         LOG_ERR("lcc_init: invalid arguments");
         return -EINVAL;
     }
 
-    memcpy(node_id, this->node_id, LCC_NODE_ID_SIZE);
-    this->device = *device;
+    memcpy(node_id, this->id, LCC_NODE_ID_LEN);
+    this->device = device;
 
     state = LCC_STATE_ATTACHED;
 
@@ -21,26 +26,27 @@ int LCC::Init(const uint8_t *node_id, LCC_Device *device) {
     return 0;
 }
 
-int lcc_send_message(const lcc_node_t *node, const lcc_message_t *message) {
-    if (!node || !message || !message->data || message->len == 0) {
+int LCC_Node::Send(lcc_message_t *message) {
+    if (!message || !message->data || message->len == 0) {
         LOG_ERR("lcc_send_message: invalid arguments");
         return -EINVAL;
     }
-    if (node->state != LCC_STATE_INITIALIZED) {
+    if (state != LCC_STATE_INITIALIZED) {
         LOG_ERR("lcc_send_message: node not initialized");
         return -EACCES;
     }
-    return node->send(node->device , message);
+    memcpy(message->source, this->id, LCC_NODE_ID_LEN);
+    return device->send(message);
 }
 
-int lcc_receive_message(lcc_node_t *node, lcc_message_t *message) {
-    if (!node || !message) {
+int LCC_Node::Receive(lcc_message_t *message) {
+    if (!message) {
         LOG_ERR("lcc_receive_message: invalid arguments");
         return -EINVAL;
     }
-    if (node->state != LCC_STATE_INITIALIZED) {
+    if (state != LCC_STATE_INITIALIZED) {
         LOG_ERR("lcc_receive_message: node not initialized");
         return -EACCES;
     }
-    return node->receive(node->device , message);
+    return device->recv(message);
 }

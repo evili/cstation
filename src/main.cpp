@@ -8,7 +8,7 @@
 
 LOG_MODULE_REGISTER(cstation, LOG_LEVEL_INF);
 
-const lcc_node_id_t CONFIG_LCC_NODE_ID = {0x05, 0x01, 0x01, 0x01, 0x1A, 0x01};
+lcc_node_id_t CONFIG_LCC_NODE_ID = {0x05, 0x01, 0x01, 0x01, 0x1A, 0x01};
 const struct device *can_dev = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(can1));
 
 int main(void) {
@@ -27,16 +27,19 @@ int main(void) {
 
     /* Define LCC node */
     LCC_Node node;
-    LCC_Dev lcc_can(can_dev);
+    LCC_Can lcc_can(can_dev);
 
-    ret = node.init(CONFIG_LCC_NODE_ID, lcc_can);
+    ret = node.Init(&CONFIG_LCC_NODE_ID, &lcc_can);
     if (ret != 0) {
         LOG_ERR("Failed to initialize LCC node");
         return -EIO;
     }
 
+    lcc_message_t msg;
+    memcpy(&msg, &LCC_MESSAGE_VERIFY_NODE_GLOBAL, sizeof(lcc_message_t));
+
     while(1) {
-        ret = node.send(&node, &LCC_MESSAGE_VERIFY_NODE_GLOBAL);
+        ret = node.Send(&msg);
         if (ret != 0) {
             LOG_ERR("Failed to send LCC message");
         }
