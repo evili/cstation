@@ -1,8 +1,8 @@
-#ifndef   LCC_CAN_H
-#define   LCC_CAN_H
+#ifndef   LCC_CAN_HXX
+#define   LCC_CAN_HXX
 
 #include <zephyr/drivers/can.h>
-#include "lcc.h"
+#include "lcc.hxx"
 
 #define LCC_CAN_CHECK_ID_WAIT 200 // milliseconds
 
@@ -64,20 +64,23 @@ typedef union {
 } can_alias_id_t;
 
 
-typedef stuct {
-    lcc_can_state_t state;
-    const struct device *can_dev;
-    const lcc_node_t *node;
-    can_alias_id_t alias_id;
-} lcc_can_dev_t;
-
-
-int lcc_can_attach(void *can_device, const lcc_node_t *node);
-int lcc_can_send_message(void *can_device, const lcc_message_t *message);
-int lcc_can_receive_message(void *can_device, lcc_message_t *message);
-
-void lcc_can_rx_lcc_frame(const lcc_can_dev_t *dev, struct can_frame *frame, void *user_data);
-void lcc_can_rx_control_frame(const lcc_can_dev_t *dev, struct can_frame *frame, void *user_data);
+class LCC_Can : LCC_Dev {
+public:
+  LCC_Can(device *);
+  int attach(LCC_Node *);
+  int send(lcc_message_t *);
+  int recv(lcc_message_t *);
+private:
+  struct device *can_dev;
+  lcc_can_state_t state = LCC_CAN_STATE_INHIBITED;
+  can_alias_id_t alias = {.pad = 0, .alias = 0};
+  int lcc_enter_permitted_state();
+  void lcc_can_get_next_alias();
+  int lcc_send_check_id();
+  int lcc_send_reserve_id();
+  int lcc_can_rx_lcc_frame(struct can_frame *);
+  int lcc_can_rx_control_frame(struct can_frame *);
+};
 
 #endif // LCC_CAN_H
 

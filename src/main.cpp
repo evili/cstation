@@ -3,8 +3,8 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/can.h>
 #include <zephyr/logging/log.h>
-#include <lcc.h>
-#include <lcc_can.h>
+#include <lcc.hxx>
+#include <lcc_can.hxx>
 
 LOG_MODULE_REGISTER(cstation, LOG_LEVEL_INF);
 
@@ -26,22 +26,17 @@ int main(void) {
     }
 
     /* Define LCC node */
-    lcc_node_t node;
+    LCC_Node node;
+    LCC_Dev lcc_can(can_dev);
 
-    ret = lcc_init(&node,
-        CONFIG_LCC_NODE_ID,
-        (void *) can_dev,
-        lcc_can_attach,
-        lcc_can_send_message,
-        lcc_can_receive_message
-    );
+    ret = node.init(CONFIG_LCC_NODE_ID, lcc_can);
     if (ret != 0) {
         LOG_ERR("Failed to initialize LCC node");
         return -EIO;
     }
 
     while(1) {
-        ret = lcc_send_message(&node, &LCC_MESSAGE_VERIFY_NODE_GLOBAL);
+        ret = node.send(&node, &LCC_MESSAGE_VERIFY_NODE_GLOBAL);
         if (ret != 0) {
             LOG_ERR("Failed to send LCC message");
         }

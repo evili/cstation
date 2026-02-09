@@ -1,5 +1,5 @@
-#ifndef LCC_H
-#define LCC_H
+#ifndef LCC_HXX
+#define LCC_HXX
 
 #define LCC_NODE_ID_LEN 6
 
@@ -10,17 +10,6 @@ typedef enum {
     LCC_STATE_ATTACHED,
     LCC_STATE_INITIALIZED
 } lcc_state_t;
-
-typedef struct lcc_node_t lcc_node_t;
-
-struct lcc_node_t{
-    lcc_node_id_t node_id;
-    lcc_state_t state;
-    void *device;
-    int (*attach)  (void *device, lcc_node_t *node);
-    int (*send)    (void *device, const struct lcc_message_t *message);
-    int (*receive) (void *device, struct lcc_message_t *message);
-};
 
 typedef union {
     struct {
@@ -44,28 +33,33 @@ typedef struct {
     uint8_t *data;
 } lcc_message_t;
 
-const lcc_message_t LCC_MESSAGE_VERIFY_NODE_GLOBAL = {
-    .mti = 0x0490,
-    .data = NULL,
-    .len = 0
-};
-
 const lcc_message_t LCC_MESSAGE_VERIFY_NODE_ADDRESSED = {
     .mti = 0x0488,
     .data = NULL,
     .len = LCC_NODE_ID_LEN
 };
 
-int lcc_node_init(
-    lcc_node_t *node,
-    const lcc_node_id_t node_id,,
-    void *device,
-    void *attach,
-    void *send,
-    void *receive
-);
 
-int lcc_send_message(const lcc_node_t *node, const lcc_message_t *message);
-int lcc_receive_message(const lcc_node_t *node, lcc_message_t *message);
+class LCC_Node;
 
-#endif /* LCC_H */
+class LCC_Dev {
+public:
+  virtual int attach(LCC_Node *) = 0;
+  virtual int send(lcc_message_t *) = 0;
+  virtual int recv(lcc_message_t *) = 0;
+};
+
+class LCC_Node {
+public:
+  LCC_Node();
+  int Init(lcc_node_id, LCC_Dev *);
+  int Send(lcc_message_t *);
+  int Receive(lcc_message_t *);
+private:
+  lcc_node_id_t id;
+  lcc_state_t state = LCC_STATE_UNINITIALIZED;
+  LCC_Device *device;
+};
+
+
+#endif /* LCC_HXX */
