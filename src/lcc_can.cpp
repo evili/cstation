@@ -81,10 +81,10 @@ int LCC_Can::lcc_enter_permitted_state() {
     }
     state = LCC_CAN_STATE_PERMITTED;
 
-    uint64_t *node_id = (uint64_t *) node->get_id;
+    uint64_t *node_id = (uint64_t *) node->get_id();
 
-    sys_hashmap_insert(alias_map, alias.alias16, node_id, NULL);
-    LOG_INF("Node [0x%064x] entered PERMITTED state with alias %d", node_id, alias);
+    // TODO: sys_hashmap_insert(alias_map, alias.alias16, node_id, NULL);
+    LOG_INF("Node [0x%064llx] entered PERMITTED state with alias %x", *node_id, alias.alias);
     return 0;
 }
 
@@ -123,7 +123,7 @@ int LCC_Can::lcc_can_rx_lcc_frame(struct can_frame *frame) {
     );
     // TODO: implement receiving LCC as part of many CAN Frames.
     LOG_ERR("LCC Receiving LCC Frame not implemented yet");
-    free(lcc_message);
+    // free(lcc_message);
     return -ENOTSUP;
 /*
     lcc_message_t *lcc_message = malloc(sizeof(lcc_message_t));
